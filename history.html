@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#f5f4ed">
+    <title>Verdant — History</title>
+    <script>
+        try {
+            var th = localStorage.getItem("vd_theme");
+            if (th) document.documentElement.dataset.theme = th
+        } catch (e) {}
+    </script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
+    <link rel="modulepreload" href="assets/js/app.js">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="loading-screen" id="loading" role="status" aria-live="polite">
+        <div class="vd-loader">
+            <svg viewBox="0 0 64 64" class="vd-leaf" aria-hidden="true">
+                <path class="vd-stem" d="M32 56 C32 44 32 30 32 16" />
+                <path class="vd-blade vd-l" d="M32 40 C19 40 11 31 11 18 C24 18 32 27 32 40Z" />
+                <path class="vd-blade vd-r" d="M32 30 C45 30 53 21 53 8 C40 8 32 17 32 30Z" />
+            </svg>
+            <div class="vd-word">Verdant</div>
+            <div class="vd-bar"><i></i></div>
+        </div>
+    </div>
+
+    <div class="app">
+        <div class="topbar" data-topbar>
+            <a href="wallet.html" class="icon-btn" aria-label="Back" style="margin-right:8px">‹</a>
+            <div class="topbar-title" data-i18n="hist_title">History</div>
+
+        </div>
+        <div class="page" data-page data-nav="wallet.html">
+            <div class="hist-tabs">
+                <button class="hist-tab active" data-act="hist" data-hist="tx" data-i18n="h_tx">Transactions</button>
+                <button class="hist-tab" data-act="hist" data-hist="wd" data-i18n="h_wd">Withdrawals</button>
+                <button class="hist-tab" data-act="hist" data-hist="done" data-i18n="h_done">Completed</button>
+            </div>
+            <div class="tx-list" data-hist-list></div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item"><span class="nav-icon">⌂</span><span data-i18n="nav_home">Home</span></a>
+            <a href="tasks.html" class="nav-item"><span class="nav-icon">✳</span><span data-i18n="nav_tasks">Tasks</span></a>
+            <a href="leaderboard.html" class="nav-item"><span class="nav-icon">🏆</span><span data-i18n="nav_rank">Rank</span></a>
+            <a href="wallet.html" class="nav-item"><span class="nav-icon">◇</span><span data-i18n="nav_wallet">Wallet</span></a>
+            <a href="profile.html" class="nav-item"><span class="nav-icon">◎</span><span data-i18n="nav_profile">Profile</span></a>
+        </nav>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script type="module" src="assets/js/app.js"></script>
+</body>
+
+</html>

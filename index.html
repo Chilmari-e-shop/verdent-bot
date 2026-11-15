@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#f5f4ed">
+    <title>Verdant — Home</title>
+    <script>
+        try {
+            var th = localStorage.getItem("vd_theme");
+            if (th) document.documentElement.dataset.theme = th
+        } catch (e) {}
+    </script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
+    <link rel="modulepreload" href="assets/js/app.js">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="loading-screen" id="loading" role="status" aria-live="polite">
+        <div class="vd-loader">
+            <svg viewBox="0 0 64 64" class="vd-leaf" aria-hidden="true">
+                <path class="vd-stem" d="M32 56 C32 44 32 30 32 16" />
+                <path class="vd-blade vd-l" d="M32 40 C19 40 11 31 11 18 C24 18 32 27 32 40Z" />
+                <path class="vd-blade vd-r" d="M32 30 C45 30 53 21 53 8 C40 8 32 17 32 30Z" />
+            </svg>
+            <div class="vd-word">Verdant</div>
+            <div class="vd-bar"><i></i></div>
+        </div>
+    </div>
+
+    <div class="app">
+        <div class="topbar" data-topbar>
+            <div class="topbar-title">Verdant</div>
+            <div class="topbar-actions">
+                <button class="icon-btn" data-act="lang" type="button" aria-label="Language">🌐</button>
+                <a href="notifications.html" class="icon-btn" aria-label="Notifications">🔔</a>
+            </div>
+        </div>
+        <div class="page" data-page data-nav="index.html">
+            <div class="greeting">
+                <div class="date" data-date>—</div>
+                <h1 data-greeting>Welcome ✳</h1>
+                <p data-i18n="ready">Ready to make a little progress today?</p>
+            </div>
+
+            <div class="balance-card">
+                <div class="balance-label" data-i18n="avail">Available Balance</div>
+                <div class="balance-amount" data-balance>$0<small>.00</small></div>
+                <div class="balance-meta">
+                    <div><span data-i18n="pending">Pending</span><strong data-pending>$0.00</strong></div>
+                    <div><span data-i18n="streak">Streak</span><strong><span data-streak-val>00</span> <span data-i18n="days">days</span></strong></div>
+                </div>
+            </div>
+
+            <div class="quick-row">
+                <a href="tasks.html" class="quick-item"><span class="q-ic">✳</span><span data-i18n="q_tasks">Tasks</span></a>
+                <a href="profile.html" class="quick-item"><span class="q-ic">🤝</span><span data-i18n="q_invite">Invite</span></a>
+                <a href="wallet.html" class="quick-item"><span class="q-ic">⇄</span><span data-i18n="q_convert">Convert</span></a>
+                <a href="history.html" class="quick-item"><span class="q-ic">🧾</span><span data-i18n="q_history">History</span></a>
+            </div>
+
+            <div class="announce-card" data-announce hidden></div>
+
+            <div class="checkin-card">
+                <div class="check-icon">🎁</div>
+                <div class="info"><strong data-i18n="ci_title">Daily Check-in</strong><small data-i18n="ci_sub">Claim your daily reward</small></div>
+                <button class="btn-check" data-act="checkin" data-checkin>Claim +$0.05</button>
+            </div>
+
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="icon mint">✓</div>
+                    <div class="label" data-i18n="tasks_completed">Tasks completed</div>
+                    <div class="value" data-tasks-done>0 <small>total</small></div>
+                </div>
+                <div class="stat-card">
+                    <div class="icon peach">✦</div>
+                    <div class="label" data-i18n="daily_streak">Daily streak</div>
+                    <div class="value"><span data-streak-val>00</span> <small data-i18n="days">days</small></div>
+                    <div class="streak-days" data-streak-days></div>
+                </div>
+            </div>
+
+            <div class="progress-banner">
+                <div class="ring" data-progress-ring style="--progress: 0%"><span>0%</span></div>
+                <div class="info" data-progress-text><strong>0 / 5</strong><small></small></div>
+            </div>
+
+            <div class="section-head">
+                <h2 data-i18n="recommended">Recommended for you</h2><a href="tasks.html" data-i18n="view_all">View all →</a>
+            </div>
+            <div class="task-list" data-home-tasks></div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item"><span class="nav-icon">⌂</span><span data-i18n="nav_home">Home</span></a>
+            <a href="tasks.html" class="nav-item"><span class="nav-icon">✳</span><span data-i18n="nav_tasks">Tasks</span></a>
+            <a href="leaderboard.html" class="nav-item"><span class="nav-icon">🏆</span><span data-i18n="nav_rank">Rank</span></a>
+            <a href="wallet.html" class="nav-item"><span class="nav-icon">◇</span><span data-i18n="nav_wallet">Wallet</span></a>
+            <a href="profile.html" class="nav-item"><span class="nav-icon">◎</span><span data-i18n="nav_profile">Profile</span></a>
+        </nav>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script type="module" src="assets/js/app.js"></script>
+</body>
+
+</html>

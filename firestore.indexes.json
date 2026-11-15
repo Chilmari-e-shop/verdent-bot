@@ -1,0 +1,30 @@
+{
+    "indexes": [],
+    "fieldOverrides": [{
+            "collectionGroup": "transactions",
+            "fieldPath": "createdAt",
+            "indexes": [{
+                    "order": "DESCENDING",
+                    "queryScope": "COLLECTION_GROUP"
+                },
+                {
+                    "order": "ASCENDING",
+                    "queryScope": "COLLECTION"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "withdrawals",
+            "fieldPath": "createdAt",
+            "indexes": [{
+                    "order": "DESCENDING",
+                    "queryScope": "COLLECTION_GROUP"
+                },
+                {
+                    "order": "ASCENDING",
+                    "queryScope": "COLLECTION"
+                }
+            ]
+        }
+    ]
+}

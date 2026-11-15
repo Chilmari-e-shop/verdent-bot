@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#f5f4ed">
+    <title>Verdant — Privacy Policy</title>
+    <script>
+        try {
+            var th = localStorage.getItem("vd_theme");
+            if (th) document.documentElement.dataset.theme = th
+        } catch (e) {}
+    </script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link rel="preconnect" href="https://www.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin>
+    <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin>
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js">
+    <link rel="modulepreload" href="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js">
+    <link rel="modulepreload" href="assets/js/app.js">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
+</head>
+
+<body>
+    <div class="loading-screen" id="loading" role="status" aria-live="polite">
+        <div class="vd-loader">
+            <svg viewBox="0 0 64 64" class="vd-leaf" aria-hidden="true">
+                <path class="vd-stem" d="M32 56 C32 44 32 30 32 16" />
+                <path class="vd-blade vd-l" d="M32 40 C19 40 11 31 11 18 C24 18 32 27 32 40Z" />
+                <path class="vd-blade vd-r" d="M32 30 C45 30 53 21 53 8 C40 8 32 17 32 30Z" />
+            </svg>
+            <div class="vd-word">Verdant</div>
+            <div class="vd-bar"><i></i></div>
+        </div>
+    </div>
+
+    <div class="app">
+        <div class="topbar" data-topbar>
+            <a href="profile.html" class="icon-btn" aria-label="Back" style="margin-right:8px">‹</a>
+            <div class="topbar-title">Privacy Policy</div>
+
+        </div>
+        <div class="page" data-page data-nav="profile.html">
+            <div class="legal-card">
+                <p class="legal-updated">Last updated: October 2026</p>
+                <h2>Privacy Policy</h2>
+                <p>Verdant (“we”, “our”, or “the Mini App”) respects your privacy. This policy explains what information we process when you use the Verdant Telegram Mini App.</p>
+
+                <h3>1. Information we collect</h3>
+                <ul>
+                    <li><strong>Telegram profile data</strong> — user ID, first name, last name, username, and profile photo provided by the Telegram WebApp SDK when you open the Mini App.</li>
+                    <li><strong>App activity</strong> — tasks completed, check-ins, balance, streak, referrals, and withdrawal requests stored in our Firebase database.</li>
+                    <li><strong>Proof submissions</strong> — usernames, links or short notes you send for tasks that need review. We never ask for passwords.</li>
+                    <li><strong>Technical data</strong> — anonymous authentication identifiers required to keep your progress linked across sessions.</li>
+                </ul>
+
+                <h3>2. How we use information</h3>
+                <ul>
+                    <li>To operate the earning tasks, check-in, wallet, and referral features.</li>
+                    <li>To show your balance, streak, and leaderboard ranking.</li>
+                    <li>To process withdrawal requests and prevent abuse.</li>
+                </ul>
+
+                <h3>3. Storage & security</h3>
+                <p>Data is stored in Google Firebase (Authentication + Firestore). Access is restricted by Firebase security rules. We do not sell your personal data.</p>
+
+                <h3>4. Third parties</h3>
+                <p>We use Telegram (for the Mini App environment) and Google Firebase (for auth and database). Their own privacy policies also apply.</p>
+
+                <h3>5. Your choices</h3>
+                <p>You can stop using the Mini App at any time. For data deletion requests, contact support through the Help section in Profile.</p>
+
+                <h3>6. Changes</h3>
+                <p>We may update this policy. The “Last updated” date at the top will change when we do.</p>
+
+                <h3>7. Contact</h3>
+                <p>Questions about privacy can be sent via the Help & Support option in your Profile.</p>
+            </div>
+        </div>
+
+        <nav class="bottom-nav">
+            <a href="index.html" class="nav-item"><span class="nav-icon">⌂</span><span data-i18n="nav_home">Home</span></a>
+            <a href="tasks.html" class="nav-item"><span class="nav-icon">✳</span><span data-i18n="nav_tasks">Tasks</span></a>
+            <a href="leaderboard.html" class="nav-item"><span class="nav-icon">🏆</span><span data-i18n="nav_rank">Rank</span></a>
+            <a href="wallet.html" class="nav-item"><span class="nav-icon">◇</span><span data-i18n="nav_wallet">Wallet</span></a>
+            <a href="profile.html" class="nav-item"><span class="nav-icon">◎</span><span data-i18n="nav_profile">Profile</span></a>
+        </nav>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="assets/js/firebase-config.js"></script>
+    <script src="assets/js/i18n.js"></script>
+    <script type="module" src="assets/js/app.js"></script>
+</body>
+
+</html>

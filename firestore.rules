@@ -1,0 +1,188 @@
+// Verdant — hardened Firestore rules.  Deploy: Firebase Console → Firestore → Rules (paste), or `firebase deploy --only firestore:rules`
+// IMPORTANT: change the admin email below. The admin account MUST have a verified email.
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ---------- helpers ----------
+    function signedIn() { return request.auth != null; }
+    function isAdmin() {
+      return signedIn() && request.auth.token.email_verified == true
+        && request.auth.token.email in ['m@verdantbot.org'];
+    }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+    // UTC day key, e.g. 2026-11-14 (month/day NOT zero-padded). Must match dayKey() in app.js
+    function dayKey() {
+      return string(request.time.year()) + '-' + string(request.time.month()) + '-' + string(request.time.day());
+    }
+    function near(a, b) { return math.abs(a - b) < 0.0001; }
+    function userPath(id) { return /databases/$(database)/documents/users/$(id); }
+    function diffKeys() { return request.resource.data.diff(resource.data).affectedKeys(); }
+
+    // ---------- allowed user-doc transitions ----------
+    function profileEdit() {
+      let k = diffKeys();
+      return k.hasOnly(['firstName','lastName','username','photoUrl','telegramId','referralCode','streak','lastActiveDate','updatedAt'])
+        && (!('streak' in k) || request.resource.data.streak <= resource.data.streak + 1)
+        && (!('referralCode' in k) || resource.data.get('referralCode', '') in ['', '------', 'GUEST1']);
+    }
+    function claimOk(uid) {
+      let k = diffKeys();
+      let cid = request.resource.data.lastClaimId;
+      let cpath = /databases/$(database)/documents/users/$(uid)/completedTasks/$(cid);
+      let c = getAfter(cpath).data;
+      let t = get(/databases/$(database)/documents/tasks/$(c.taskId)).data;
+      return k.hasOnly(['balance','lifetime','tasksCompleted','lastClaimId','referralRewarded','updatedAt'])
+        && k.hasAll(['balance','lifetime','tasksCompleted','lastClaimId'])
+        && !exists(cpath)
+        && cid == c.taskId + '_' + dayKey()
+        && t.active == true && t.get('proofRequired', false) == false
+        && near(c.reward, t.reward)
+        && near(request.resource.data.balance - resource.data.balance, t.reward)
+        && near(request.resource.data.lifetime - resource.data.lifetime, t.reward)
+        && request.resource.data.tasksCompleted == resource.data.tasksCompleted + 1
+        && (!('referralRewarded' in k) || (resource.data.referralRewarded == false && resource.data.referredBy != null));
+    }
+    function checkinOk() {
+      let k = diffKeys();
+      return k.hasOnly(['balance','lifetime','lastCheckin','updatedAt'])
+        && k.hasAll(['balance','lifetime','lastCheckin'])
+        && request.resource.data.lastCheckin == dayKey()
+        && resource.data.lastCheckin != dayKey()
+        && near(request.resource.data.balance - resource.data.balance, 0.05)
+        && near(request.resource.data.lifetime - resource.data.lifetime, 0.05);
+    }
+    function withdrawOk(uid) {
+      let k = diffKeys();
+      let wpath = /databases/$(database)/documents/users/$(uid)/withdrawals/$(request.resource.data.lastWithdrawId);
+      let w = getAfter(wpath).data;
+      let amt = resource.data.balance - request.resource.data.balance;
+      return k.hasOnly(['balance','pending','lastWithdrawId','updatedAt'])
+        && k.hasAll(['balance','pending','lastWithdrawId'])
+        && !exists(wpath)
+        && amt >= 2 && request.resource.data.balance >= 0
+        && near(request.resource.data.pending - resource.data.pending, amt)
+        && near(w.amount, amt) && w.status == 'pending';
+    }
+    // referred user credits their referrer once, in the same batch that flips referralRewarded
+    function refCreditOk(uid) {
+      let me = userPath(request.auth.uid);
+      let k = diffKeys();
+      return signedIn() && request.auth.uid != uid
+        && k.hasOnly(['balance','lifetime','referrals','referralEarnings','updatedAt'])
+        && k.hasAll(['balance','lifetime','referrals','referralEarnings'])
+        && get(me).data.referredBy == uid
+        && get(me).data.referralRewarded == false
+        && getAfter(me).data.referralRewarded == true
+        && getAfter(me).data.tasksCompleted >= 1
+        && near(request.resource.data.balance - resource.data.balance, 0.5)
+        && near(request.resource.data.lifetime - resource.data.lifetime, 0.5)
+        && request.resource.data.referrals == resource.data.referrals + 1
+        && near(request.resource.data.referralEarnings - resource.data.referralEarnings, 0.5);
+    }
+    function validNewUser(uid) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['uid','telegramId','firstName','lastName','username','photoUrl','balance','pending','lifetime','withdrawn',
+          'tasksCompleted','streak','lastCheckin','lastActiveDate','referralCode','referredBy','referralRewarded','referrals','referralEarnings','createdAt','updatedAt'])
+        && d.uid == uid
+        && d.balance == 0 && d.pending == 0 && d.lifetime == 0 && d.withdrawn == 0
+        && d.tasksCompleted == 0 && d.referrals == 0 && d.referralEarnings == 0
+        && d.referralRewarded == false && d.streak <= 1
+        && (d.referredBy == null || (d.referredBy is string && d.referredBy != uid && exists(userPath(d.referredBy))));
+    }
+
+    // ---------- users ----------
+    match /users/{uid} {
+      allow read: if isAdmin() || isOwner(uid);
+      allow create: if isOwner(uid) && validNewUser(uid);
+      allow update: if isAdmin()
+        || (isOwner(uid) && (profileEdit() || claimOk(uid) || checkinOk() || withdrawOk(uid)))
+        || refCreditOk(uid);
+      allow delete: if isAdmin();
+
+      match /completedTasks/{id} {
+        allow read: if isAdmin() || isOwner(uid);
+        allow create: if isAdmin() || (isOwner(uid)
+          && request.resource.data.keys().hasOnly(['taskId','title','reward','date','completedAt'])
+          && request.resource.data.date == dayKey()
+          && request.resource.data.completedAt == request.time
+          && id == request.resource.data.taskId + '_' + dayKey());
+        allow update, delete: if isAdmin();
+      }
+
+      match /transactions/{id} {
+        allow read: if isAdmin() || isOwner(uid);
+        allow create: if isAdmin()
+          || (isOwner(uid)
+              && request.resource.data.keys().hasOnly(['type','title','amount','icon','createdAt'])
+              && request.resource.data.createdAt == request.time
+              && ((request.resource.data.type == 'earn' && request.resource.data.amount > 0 && request.resource.data.amount <= 50)
+                  || (request.resource.data.type == 'withdraw' && request.resource.data.amount < 0)))
+          || (signedIn() && request.auth.uid != uid
+              && request.resource.data.keys().hasOnly(['type','title','amount','icon','createdAt'])
+              && request.resource.data.type == 'referral' && near(request.resource.data.amount, 0.5)
+              && request.resource.data.createdAt == request.time
+              && get(userPath(request.auth.uid)).data.referredBy == uid
+              && get(userPath(request.auth.uid)).data.referralRewarded == false
+              && getAfter(userPath(request.auth.uid)).data.referralRewarded == true);
+        allow update, delete: if isAdmin();
+      }
+
+      match /withdrawals/{id} {
+        allow read: if isAdmin() || isOwner(uid);
+        allow create: if isAdmin() || (isOwner(uid)
+          && request.resource.data.keys().hasOnly(['amount','method','country','currency','rate','feePercent','feeUsd','netUsd','localAmount','account','status','createdAt'])
+          && request.resource.data.status == 'pending'
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.amount is number
+          && request.resource.data.account is string && request.resource.data.account.size() <= 120);
+        allow update, delete: if isAdmin();
+      }
+    }
+
+    // admin-only collection-group reads (dashboard / transactions tab)
+    match /{path=**}/withdrawals/{id}   { allow read: if isAdmin(); }
+    match /{path=**}/transactions/{id}  { allow read: if isAdmin(); }
+
+    // ---------- tasks / announcements ----------
+    match /tasks/{id}         { allow read: if signedIn(); allow write: if isAdmin(); }
+    match /announcements/{id} { allow read: if signedIn(); allow write: if isAdmin(); }
+
+    // ---------- submissions: one per user+task+day, always created as pending ----------
+    match /submissions/{id} {
+      allow read: if isAdmin() || (signedIn() && (resource == null || resource.data.uid == request.auth.uid));
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['uid','taskId','taskTitle','reward','proof','proofData','status','date','createdAt','userName'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.date == dayKey()
+        && request.resource.data.createdAt == request.time
+        && id == request.auth.uid + '_' + request.resource.data.taskId + '_' + dayKey()
+        && request.resource.data.proof is string && request.resource.data.proof.size() <= 600
+        && near(request.resource.data.reward, get(/databases/$(database)/documents/tasks/$(request.resource.data.taskId)).data.reward);
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- referral codes (lookup only by exact code, no listing) ----------
+    match /referralCodes/{code} {
+      allow get: if signedIn();
+      allow create: if signedIn() && request.resource.data.keys().hasOnly(['uid','createdAt'])
+        && request.resource.data.uid == request.auth.uid;
+      allow update, delete: if isAdmin();
+    }
+
+    // ---------- public leaderboard (score must equal the real lifetime value) ----------
+    match /leaderboard/{uid} {
+      allow read: if signedIn();
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['name','score','tasks','updatedAt'])
+        && request.resource.data.name is string && request.resource.data.name.size() <= 60
+        && request.resource.data.score == get(userPath(uid)).data.lifetime
+        && request.resource.data.tasks == get(userPath(uid)).data.tasksCompleted;
+      allow delete: if isAdmin();
+    }
+
+    // everything else: admin only
+    match /{document=**} { allow read, write: if isAdmin(); }
+  }
+}
